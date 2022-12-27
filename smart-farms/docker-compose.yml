@@ -1,0 +1,28 @@
+---
+version: "3"
+
+services:
+  sf-nodered:
+    image: nodered/node-red:2.2.3-16
+    container_name: sf-nodered
+    ports:
+      - 1880:1880
+    volumes:
+      - ./nodered-data:/data
+
+  sf-influxdb:
+    image: influxdb:2.2-alpine
+    container_name: sf-influxdb
+    ports:
+      - 8086:8086
+    volumes:
+      - ./influxdb-data:/var/lib/influxdb2
+
+  sf-grafana:
+    image: grafana/grafana:9.3.2-ubuntu
+    container_name: sf-grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    restart: unless-stopped

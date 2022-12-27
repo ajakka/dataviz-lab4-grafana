@@ -1,0 +1,17 @@
+{
+	"ulid": "01GN54PV5992S627ZF735EKS0B",
+	"minTime": 1671940800000,
+	"maxTime": 1671948000000,
+	"stats": {
+		"numSamples": 910665,
+		"numSeries": 735,
+		"numChunks": 8085
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01GN54PV5992S627ZF735EKS0B"
+		]
+	},
+	"version": 1
+}

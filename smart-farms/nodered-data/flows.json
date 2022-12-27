@@ -1,0 +1,246 @@
+[
+    {
+        "id": "ca0d4b6aaa5779a8",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "7c7dc628.08a158",
+        "type": "tab",
+        "label": "TemperaturSensor",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "5aafb45b2a61b564",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "influx_smart_farms",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://sf-influxdb:8086",
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "8866b676803143ab",
+        "type": "rpi-dht22",
+        "z": "ca0d4b6aaa5779a8",
+        "name": "",
+        "topic": "rpi-dht22",
+        "dht": 22,
+        "pintype": 1,
+        "pin": 4,
+        "x": 320,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ec8e3f168113a463",
+        "type": "inject",
+        "z": "ca0d4b6aaa5779a8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 140,
+        "wires": [
+            [
+                "38106a8dfbf9b7b3"
+            ]
+        ]
+    },
+    {
+        "id": "3e4c212afde885ad",
+        "type": "debug",
+        "z": "ca0d4b6aaa5779a8",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "38106a8dfbf9b7b3",
+        "type": "function",
+        "z": "ca0d4b6aaa5779a8",
+        "name": "dht22 emu",
+        "func": "function getRandomInt(min, max) {\n    return Math.floor(Math.random() * (max - min + 1)) + min;\n}\nmsg.payload = {\n    // myymd: \"2022-12-25\",\n    time: msg.payload,\n    temp: getRandomInt(15, 42),\n    humidity: getRandomInt(10, 80),\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 220,
+        "wires": [
+            [
+                "3e4c212afde885ad",
+                "e25d9f955df40f4a"
+            ]
+        ]
+    },
+    {
+        "id": "e25d9f955df40f4a",
+        "type": "influxdb out",
+        "z": "ca0d4b6aaa5779a8",
+        "influxdb": "5aafb45b2a61b564",
+        "name": "smart_farms_cond",
+        "measurement": "dht22",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "school",
+        "bucket": "smart_farms",
+        "x": 610,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "1c4074bd.e3bf8b",
+        "type": "function",
+        "z": "7c7dc628.08a158",
+        "name": "loop",
+        "func": "function getRandomInt(min, max) {\n  return Math.floor(Math.random() * (max - min +1)) + min;\n}\n\ncontext.loop = context.loop || \"stop\";\ncontext.loops = context.loops || 0;\n\nswitch (msg.payload) {\n\tcase \"stop\":\n\t\tcontext.loops = context.loops + 1;\n\t\tmsg.payload = \"stopped\";\n\t\tcontext.loop = \"stop\";\n\t\treturn [msg,null];\n\tcase \"toggle\":\n\t\tif (context.loop == \"start\") {\n\t\t\tmsg.payload = \"stopped\";\n\t\t\tcontext.loop = \"stop\";\n\t\t\treturn [msg,null];\n\t\t} else {\n\t\t\tmsg.payload = \"started\";\n\t\t\tcontext.loop = \"loop\";\n\t\t\tcontext.loops = 1;\n\t\t\treturn [msg,msg];\n\t\t}\n\tcase \"start\":\n\t\tmsg.payload = 20;\n\t\tcontext.loop = \"loop\";\n\t\tcontext.loops = 1;\n\t\treturn [msg,msg];\n\tdefault:\n\t\tif (context.loop == \"loop\") {\n\t\t\tcontext.loops = context.loops + 1;\n\t\t\tif (msg.payload > 40) {\n\t\t\t    msg.payload = msg.payload + getRandomInt(-4, 0)\n\t\t\t}\n\t\t\telse if (msg.payload < -20) {\n\t\t\t    msg.payload = msg.payload + getRandomInt(-4, 0)\n\t\t\t}\n\t\t\telse {\n\t\t\t    msg.payload = msg.payload + getRandomInt(-3, 3);\n\t\t\t}\n\t\t\treturn [msg,msg];\n\t\t} else {\n\t\t\treturn [null,null]; \n\t\t}\n}",
+        "outputs": "2",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 140,
+        "wires": [
+            [
+                "7b60d417.849f2c"
+            ],
+            [
+                "a380b8b5.5c7f48"
+            ]
+        ]
+    },
+    {
+        "id": "a380b8b5.5c7f48",
+        "type": "delay",
+        "z": "7c7dc628.08a158",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "outputs": 1,
+        "x": 480,
+        "y": 320,
+        "wires": [
+            [
+                "1c4074bd.e3bf8b"
+            ]
+        ]
+    },
+    {
+        "id": "7b60d417.849f2c",
+        "type": "debug",
+        "z": "7c7dc628.08a158",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 659,
+        "y": 135,
+        "wires": []
+    },
+    {
+        "id": "8cf655a0.7309a8",
+        "type": "inject",
+        "z": "7c7dc628.08a158",
+        "name": "start Sensor",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "",
+        "topic": "home/temperature",
+        "payload": "start",
+        "payloadType": "str",
+        "x": 258,
+        "y": 105,
+        "wires": [
+            [
+                "1c4074bd.e3bf8b"
+            ]
+        ]
+    },
+    {
+        "id": "c59c9644.3a6368",
+        "type": "inject",
+        "z": "7c7dc628.08a158",
+        "name": "stop Sensor",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "",
+        "topic": "home/temperature",
+        "payload": "stop",
+        "payloadType": "str",
+        "x": 260,
+        "y": 181,
+        "wires": [
+            [
+                "1c4074bd.e3bf8b"
+            ]
+        ]
+    }
+]
