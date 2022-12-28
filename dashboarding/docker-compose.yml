@@ -1,19 +1,6 @@
----
 version: "3"
 
 services:
-  prometheus:
-    image: prom/prometheus:v2.41.0
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus-data/config:/config
-      - ./prometheus-data:/prometheus
-    restart: unless-stopped
-    command:
-      - "--config.file=/config/prometheus.yml"
-
   grafana:
     image: grafana/grafana:9.3.2-ubuntu
     container_name: grafana
@@ -21,4 +8,24 @@ services:
       - "3001:3000"
     volumes:
       - ./grafana-data:/var/lib/grafana
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.41.0
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus-data/config:/config
+      - ./prometheus-data:/prometheus
+    command:
+      - --config.file=/config/prometheus.yml
+      - --storage.tsdb.retention.time=1d
+    restart: unless-stopped
+
+  node_exporter:
+    image: prom/node-exporter:v1.5.0
+    container_name: node_exporter
+    ports:
+      - 9100:9100
     restart: unless-stopped
